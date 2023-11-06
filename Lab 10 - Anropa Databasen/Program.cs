@@ -39,6 +39,7 @@ namespace Lab_10___Anropa_Databasen
 
                 case "2":
                     Console.WriteLine("Create new Customer");
+                    AddCustomer(context);
                     break;
 
                 case "q":
@@ -79,7 +80,7 @@ namespace Lab_10___Anropa_Databasen
         //- Listing all customers method
         static void ListCustomers(NorthWindContext context, bool asc)
         {
-            // Checking if (bool asc) is true or false to list in correct order.
+            // Checking if (bool asc) is true or false, this changes the OrderBy to either Ascending or Descending
             Console.WriteLine("Here's a list of all customers: ");
             var customerList = asc
                 ? context.Customers.OrderBy(c => c.CompanyName).ToList()
@@ -108,6 +109,7 @@ namespace Lab_10___Anropa_Databasen
                     break;
                 }
 
+                // Add the customer to a list called inspection and include Orders so we can see all orders made
                 List<Customer> inspection = context.Customers
                         .Where(u => u.CompanyName == inspectInput)
                         .Include(u => u.Orders)
@@ -148,5 +150,112 @@ namespace Lab_10___Anropa_Databasen
                 }
             }
         }
+
+        //- Add new Customer Method
+        static void AddCustomer(NorthWindContext context)
+        {
+            Console.Clear();
+            Console.WriteLine("Adding new Customer...");
+
+            // Take input for every field required. If q is entered it goes back to the Menu
+            Console.Write("Enter a Company name (Enter [Q] to Cancel): ");
+            string? companyName = Console.ReadLine();
+            if (companyName == "q")
+            {
+                Console.Clear();
+                StartMenu(context);
+            }
+            else
+            {
+                Console.Clear();
+                Console.WriteLine("Adding new Customer...");
+                Console.WriteLine($"Company name: {companyName}");
+                Console.Write("Enter a contact name: ");
+                string? contactName = Console.ReadLine();
+                Console.Write($"Contact title: ");
+                string? contactTitle = Console.ReadLine();
+                Console.Write($"Address: ");
+                string? address = Console.ReadLine();
+                Console.Write($"City: ");
+                string? city = Console.ReadLine();
+                Console.Write($"Region: ");
+                string? region = Console.ReadLine();
+                Console.Write($"Postal Code: ");
+                string? postalCode = Console.ReadLine();
+                Console.Write($"Country: ");
+                string? country = Console.ReadLine();
+                Console.Write($"Phone: ");
+                string? phone = Console.ReadLine();
+                Console.Write($"Fax: ");
+                string? fax = Console.ReadLine();
+
+                // Below here are 3 different ways to make a CustomerId.
+
+                // Takes the 3 first letters from CompanyName and 2 First letters from ContactName and puts them together as the CustomerId
+                // It checks if the strings are same length or longer than required, if its true use Substring otherwise just ToUpper
+                // Afterwards add them together as combineId
+                string three = companyName.Length >= 3 ? companyName.Substring(0, 3).ToUpper() : companyName.ToUpper();
+                string two = contactName.Length >= 2 ? contactName.Substring(0, 2).ToUpper() : contactName.ToUpper();
+                string combineId = three + two;
+
+                // Uses the Company name as CustomerID, shortens the input to 5 and makes it uppercase to match all other ID's
+                //string fiveId = companyName.Length >= 5 ? companyName.Substring(0, 5).ToUpper() : companyName.ToUpper();
+
+                // Making a Randomly generated CustomerID that is 5 characters
+                //string GenerateRandomId(int length)
+                //{
+                //    const string chars = "ABCDEFGHJKLMNOPQRSTUVWXYZ";
+                //    var random = new Random();
+                //    return new string(Enumerable.Repeat(chars, length)
+                //        .Select(s => s[random.Next(s.Length)]).ToArray());
+                //}
+                //string randomId = GenerateRandomId(5);
+
+
+                // Takes all the users input, using IsNullOrWhiteSpace to send NULL if empty
+                Customer newCustomer = new Customer()
+                {
+                    CustomerId = combineId, // Using randomId can change to one of the other methods, like fiveId or randomId
+                    CompanyName = companyName,
+                    ContactName = string.IsNullOrWhiteSpace(contactName) ? null : contactName,
+                    ContactTitle = string.IsNullOrWhiteSpace(contactTitle) ? null : contactTitle,
+                    Address = string.IsNullOrWhiteSpace(address) ? null : address,
+                    City = string.IsNullOrWhiteSpace(city) ? null : city,
+                    Region = string.IsNullOrWhiteSpace(region) ? null : region,
+                    PostalCode = string.IsNullOrWhiteSpace(postalCode) ? null : postalCode,
+                    Country = string.IsNullOrWhiteSpace(country) ? null : country,
+                    Phone = string.IsNullOrWhiteSpace(phone) ? null : phone,
+                    Fax = string.IsNullOrWhiteSpace(fax) ? null : fax
+                };
+
+                // Saves the inputs to the context 
+                context.Customers.Add(newCustomer);
+                context.SaveChanges();
+
+                Console.WriteLine($"\nCustomer {companyName} has been added Successfully!\n");
+                Console.WriteLine("[1] Add new Customer");
+                Console.WriteLine("[2] Go back to menu");
+                Console.WriteLine("[Q] Quit the program");
+                Console.Write("Input one of the options above: ");
+
+                string input = Console.ReadLine();
+                switch (input)
+                {
+                    case "1":
+                        AddCustomer(context);
+                        break;
+                    case "2":
+                        Console.Clear();
+                        StartMenu(context);
+                        break;
+                    case "q":
+                        Environment.Exit(0);
+                        break;
+                }
+
+            }
+            
+        }
+
     }
 }
